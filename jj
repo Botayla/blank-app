@@ -1,0 +1,21 @@
+flowchart LR
+    %% العقد (Nodes)
+    Source[🏠 Smart Meters\n50k Households]
+    Raw[📥 Raw Storage\nS3 Bucket CSV]
+    Process[⚙️ Transformation Layer\nServerless Function]
+    DB[🗄️ Structured DB\nRDS for Queries]
+    Lake[📦 Data Lake\nParquet Archive]
+    Error[🛑 Dead Letter Queue\nError Logs]
+
+    %% العلاقات والأسهم
+    Source -->|Uploads CSV| Raw
+    Raw -.->|Trigger Event| Process
+    
+    %% مسارات النجاح
+    Process -->|Cleans & Validates| DB
+    Process -->|Converts to Parquet| Lake
+    
+    %% مسارات الفشل
+    Process --x|Validation Failed| Error
+    Error -.->|Alert Admin| Admin((🔔 Alert))
+    Process -.->|Retry 3 Times| Process
